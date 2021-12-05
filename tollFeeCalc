@@ -1,0 +1,71 @@
+#Importing 'Vehicles_Data.xlsx' which is holding toll data to calculate the toll fees.
+
+import datetime
+import openpyxl
+from openpyxl import load_workbook
+
+#This function is to check for weekend and public holidays(It can be modified as per the year requirement).
+def isTollFreeDate():
+   tday = datetime.date.today()
+   Current_date = (tday.weekday())
+   if (Current_date == 5 or Current_date == 6 ):  #TO check Sunday and Saturday 
+      return 1
+   else:
+      Current_Year = (tday.year())
+      if (Current_Year == 2021):
+         Current_month = (tday.month)
+         Current_day = (tday.day)
+         if ((Current_month == 1 and Current_day == 1) or (Current_month == 3 and Current_day == 28 or Current_day == 29)
+             or (Current_month == 4 and Current_day == 1 or Current_day == 30) or (Current_month == 12 and Current_day == 24 or Current_day == 25)):  #Public holidays
+            return 1
+      return 0
+
+#This function is to check for toll-free vehicles type
+def isTollFreeVehicle():
+   Vehicles_list = ["motorbike", "tractor", "emergency", "diplomat", "foreign", "military"]
+   Vehicles_type = input("Enter vehicles type: ")
+   if (Vehicles_type.lower() not in Vehicles_list):
+      return 0
+   else:
+      return 1
+
+#This function is to calculate tollfee as per daily hours system.
+def getTollFee_calulation(Current_hours, Current_minutes):
+   if (Current_hours == 6 and Current_minutes >= 0 and Current_minutes <= 29): return 8;
+   elif (Current_hours == 6 and Current_minutes >= 30 and Current_minutes <= 59): return 13;
+   elif (Current_hours == 7 and Current_minutes >= 0 and Current_minutes <= 59): return 18;
+   elif (Current_hours == 8 and Current_minutes >= 0 and Current_minutes <= 29): return 13;
+   elif (Current_hours >= 8 and Current_hours <= 14 and Current_minutes >= 30 and Current_minutes <= 59): return 8;
+   elif (Current_hours == 15 and Current_minutes >= 0 and Current_minutes <= 29): return 13;
+   elif (Current_hours == 15 and Current_minutes >= 0 or Current_hours == 16 and Current_minutes <= 59): return 18;
+   elif (Current_hours == 17 and Current_minutes >= 0 and Current_minutes <= 59): return 13;
+   elif (Current_hours == 18 and Current_minutes >= 0 and Current_minutes <= 29): return 8;
+   else: return 8;
+
+def getTollFee(Toll_free_date, Toll_free_vehicle):
+   if (Toll_free_date == 1 and Toll_free_vehicle == 1):
+      Tollfee = ('Your toll fee for today is : 0')
+      return Tollfee
+   else:
+      Vehicles_Number = int(input("Enter vehicle no.")) #To check for perticuler vehicle number
+      wb_obj = openpyxl.load_workbook('Vehicles_Data.xlsx') #To open the saved database for vehicle entry of toll fee.
+      sheet = wb_obj.active
+      Tollfeelist = 0
+      for i in range(2,10):
+         if (Vehicles_Number == sheet.cell(row = i, column = 1).value):
+            Current_hours = (sheet.cell(row = i, column = 2).value)
+            Current_minutes = (sheet.cell(row = i, column = 3).value)            
+            Current_hourfee_list = getTollFee_calulation(Current_hours, Current_minutes)
+            print(Current_hourfee_list)
+            Tollfeelist = Current_hourfee_list + Tollfeelist
+            # This code can be improved if data is given for whole day in certain format.
+      if (Tollfeelist >= 60):
+         Tollfeelist =60
+      Tollfee = ('Your toll fee for today is :' +str(Tollfeelist))
+      return Tollfee
+
+
+Toll_free_date = isTollFreeDate()
+Toll_free_vehicle = isTollFreeVehicle()
+final_tollfee = getTollFee(Toll_free_date, Toll_free_vehicle)
+print(final_tollfee)
